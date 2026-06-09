@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPSC Current Affairs & Daily News Portal</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; padding: 0; background-color: #f9f9f9; color: #333;
+            display: flex; flex-direction: column; min-height: 100vh;
+        }
+
+        header { background-color: #ffffff; border-bottom: 1px solid #ececec; padding: 15px 20px; text-align: center; }
+        header h1 { margin: 0; font-size: 1.5rem; color: #111; cursor: pointer; display: inline-block; }
+
+        .wrapper { display: flex; flex: 1; max-width: 1400px; width: 100%; margin: 0 auto; }
+
+        /* LEFT SIDEBAR Navigation */
+        .sidebar { width: 240px; background-color: #ffffff; border-right: 1px solid #ececec; padding: 20px 10px; display: flex; flex-direction: column; gap: 8px; }
+        .category-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; text-decoration: none; color: #444; font-size: 0.95rem; font-weight: 500; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; }
+        .category-item:hover, .category-item.active { background-color: #f1f5f9; color: #0056b3; }
+
+        /* MAIN MASTER GRID LAYOUT */
+        .main-workspace { flex: 1; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; padding: 20px; }
+        .content-view { display: flex; flex-direction: column; gap: 20px; }
+
+        .page { display: none; }
+        .page.active { display: flex; flex-direction: column; gap: 20px; }
+
+        /* News Cards Dashboard */
+        .news-card { background: #ffffff; border: 1px solid #e1e1e1; border-radius: 4px; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .news-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .card-body { padding: 20px; }
+        .card-body h2 { margin: 0 0 10px 0; font-size: 1.35rem; color: #111; line-height: 1.4; }
+        .card-body p { margin: 0; color: #555; font-size: 0.95rem; line-height: 1.6; }
+
+        /* INNER ARTICLE SCREEN VIEW */
+        .article-view { background: #ffffff; border: 1px solid #e1e1e1; border-radius: 4px; padding: 30px; position: relative; }
+        .back-btn { margin-bottom: 20px; padding: 8px 16px; border: 1px solid #ccc; background: #fff; cursor: pointer; border-radius: 4px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; transition: background 0.2s; }
+        .back-btn:hover { background: #f5f5f5; }
+        
+        .article-title { font-size: 2rem; font-weight: 600; margin: 0 0 15px 0; color: #111; line-height: 1.3; }
+        
+        .article-meta { font-size: 0.9rem; color: #555; margin-bottom: 20px; border-left: 3px solid #ff6600; padding-left: 10px; }
+        .meta-row { display: flex; align-items: center; gap: 8px; margin: 4px 0; color: #666; }
+        
+        /* Social Sharing Buttons Row */
+        .social-row { display: flex; justify-content: flex-start; gap: 12px; margin: 20px 0; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+        .share-circle { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; font-size: 0.95rem; font-weight: bold; transition: opacity 0.2s; }
+        .share-circle:hover { opacity: 0.85; }
+        .fb { background-color: #4a6ea5; } .tw { background-color: #1da1f2; } .ln { background-color: #0077b5; } .wa { background-color: #25d366; }
+
+        .article-image { width: 100%; max-height: 450px; object-fit: cover; border-radius: 4px; margin: 15px 0; background-color: #eee; }
+        .article-content { font-size: 1.05rem; line-height: 1.7; color: #222; margin-top: 20px; }
+        .article-content p { margin-bottom: 20px; text-align: justify; }
+
+        /* Source Link Line */
+        .source-line { font-size: 0.95rem; margin: 25px 0 15px 0; color: #333; font-style: italic; }
+        .source-line a { color: #0056b3; text-decoration: underline; font-weight: 500; }
+
+        /* Dynamic Tags/Buttons Block */
+        .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0; border-bottom: 1px solid #eee; padding-bottom: 25px; }
+        .tag-btn { border: 1px solid #bbb; background: #fff; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; color: #444; text-decoration: none; transition: all 0.2s; }
+        .tag-btn:hover { background: #ff6600; color: #fff; border-color: #ff6600; }
+
+        /* Related Stories Section Layout */
+        .related-section { margin-top: 30px; }
+        .related-title { color: #ff6600; font-size: 1.4rem; font-weight: 600; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .related-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        .related-item { display: flex; gap: 15px; text-decoration: none; color: inherit; border-radius: 4px; padding: 5px; transition: background 0.2s; cursor: pointer; }
+        .related-item:hover { background: #f5f5f5; }
+        .related-thumb { width: 90px; height: 65px; background: #ddd; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
+        .related-info h4 { margin: 0 0 4px 0; font-size: 0.95rem; line-height: 1.3; color: #111; font-weight: 500; }
+        .related-meta { font-size: 0.8rem; color: #777; }
+
+        /* Comment Input Box components */
+        .comment-section { margin-top: 30px; background: #fafafa; border: 1px solid #e1e1e1; padding: 20px; border-radius: 4px; }
+        .comment-box { width: 100%; height: 80px; border: 1px solid #ccc; padding: 10px; font-family: inherit; resize: none; margin-bottom: 10px; border-radius: 4px; }
+        .comment-btn { float: right; background: white; border: 1px solid #ff6600; color: #ff6600; padding: 8px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+        .comment-btn:hover { background: #ff6600; color: white; }
+
+        /* RIGHT WIDGET WRAPPER */
+        .right-column { display: flex; flex-direction: column; gap: 20px; }
+        .widget-box { background: #ffffff; border: 1px solid #e1e1e1; border-radius: 4px; padding: 20px; text-align: center; }
+        .ad-placeholder { min-height: 250px; background: #f0f0f0; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #999; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* RESPONSIVE DESIGN BREAKPOINTS */
+        @media (max-width: 992px) {
+            .wrapper { flex-direction: column; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #ececec; flex-direction: row; overflow-x: auto; padding: 10px; }
+            .category-item { white-space: nowrap; }
+            .main-workspace { grid-template-columns: 1fr; padding: 15px; }
+            .related-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 onclick="showPage('feed-page')">🏛️ DAILY NEWS TRANSCRIPT</h1>
+    </header>
+
+    <div class="wrapper">
+        <nav class="sidebar">
+            <span class="category-item active" onclick="filterCategory('all', this)">📋 All Streams</span>
+            <span class="category-item" onclick="filterCategory('sports', this)">⚽ Sports News</span>
+            <span class="category-item" onclick="filterCategory('politics', this)">🏛️ Politics & Govt</span>
+        </nav>
+
+        <div class="main-workspace">
+            <div class="content-view">
+                
+                <div id="feed-page" class="page active">
+                    <div id="news-feed-list">
+                        </div>
+                </div>
+
+                <div id="article-page" class="page">
+                    <article class="article-view">
+                        <button onclick="showPage('feed-page')" class="back-btn">← Back to Feed</button>
+                        
+                        <h1 id="dyn-title" class="article-title">Headline Loading...</h1>
+                        
+                        <div class="article-meta">
+                            <div class="meta-row">👤 <span id="dyn-author">Author</span></div>
+                            <div class="meta-row">📅 <span id="dyn-date">Timeline</span></div>
+                        </div>
+
+                        <div class="social-row">
+                            <a href="#" class="share-circle fb" onclick="alert('Shared to Facebook!')">f</a>
+                            <a href="#" class="share-circle tw" onclick="alert('Shared to Twitter!')">X</a>
+                            <a href="#" class="share-circle ln" onclick="alert('Shared to LinkedIn!')">in</a>
+                            <a href="#" class="share-circle wa" onclick="alert('Shared to WhatsApp!')">w</a>
+                        </div>
+
+                        <div id="dyn-media-box"></div>
+
+                        <div id="dyn-content" class="article-content"></div>
+
+                        <div class="source-line">
+                            Source: <a id="dyn-source" href="#" target="_blank">Straits Times</a>
+                        </div>
+
+                        <div class="social-row" style="border-bottom:none; padding-bottom:0;">
+                            <a href="#" class="share-circle fb" onclick="alert('Shared to Facebook!')">f</a>
+                            <a href="#" class="share-circle tw" onclick="alert('Shared to Twitter!')">X</a>
+                            <a href="#" class="share-circle ln" onclick="alert('Shared to LinkedIn!')">in</a>
+                            <a href="#" class="share-circle wa" onclick="alert('Shared to WhatsApp!')">w</a>
+                        </div>
+
+                        <div id="dyn-tags" class="tags-container"></div>
+
+                        <div class="related-section">
+                            <div class="related-title">Related Stories</div>
+                            <div class="related-grid" id="dyn-related-grid"></div>
+                        </div>
+
+                        <div class="comment-section">
+                            <span style="font-size:0.9rem; color:#444; font-weight: 500;">Likes 0 &nbsp;•&nbsp; Comments 0</span>
+                            <textarea class="comment-box" placeholder="Write your perspectives or study notes here..."></textarea>
+                            <button class="comment-btn" onclick="alert('Comment submitted successfully!')">Comment</button>
+                            <div style="clear:both;"></div>
+                        </div>
+
+                    </article>
+                </div>
+
+            </div>
+
+            <aside class="right-column">
+                <div class="widget-box ad-placeholder">Advertisement Space</div>
+                <div class="widget-box" style="text-align: left; font-size: 0.85rem; color: #666; line-height: 1.5;">
+                    <h4>UPSC Portal Links</h4>
+                    <p style="margin: 5px 0;"><a href="#" style="color:#444; text-decoration:none;">• Syllabus Guide</a></p>
+                    <p style="margin: 5px 0;"><a href="#" style="color:#444; text-decoration:none;">• Answer Keys</a></p>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin:15px 0;">
+                    Terms & Conditions | Privacy Policy<br><br>
+                    Copyright © BehindStories 2026.
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script>
+        // Data block matching layout specifications exactly
+        const ARTICLE_DATABASE = {
+            'mancity-liverpool': {
+                title: "Football: Man City end Liverpool's unbeaten run, cut lead to four points",
+                author: 'Sifos Style (@sifosstyle)',
+                date: 'Published : 3 years ago · 2 min read · 👁️ 49 Unique views',
+                img: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800',
+                sourceName: 'Straits Times',
+                sourceUrl: 'https://www.straitstimes.com',
+                tags: ['EPL', 'Manchester City', 'Liverpool', 'Football', 'Matches'],
+                paragraphs: [
+                    "MANCHESTER, England (REUTERS) - Leroy Sane struck the winner as Manchester City beat Liverpool 2-1 in a gripping Premier League clash on Thursday (Jan 3), inflicting the first loss of the season on Juergen Klopp's side and cutting their lead at the top to four points.",
+                    "The game at the Etihad Stadium lived up to its billing with both sides showing that for all their trademark attractive football, they can go hard in a physical battle when so much is on the line.",
+                    "City's recent run of three defeats in five games had raised questions over whether the champions had the durability to sustain a title challenge with a Liverpool side who have had an air of invincibility about them.",
+                    "But with key midfielders Fernandinho and David Silva back in the side and veteran skipper Vincent Kompany recalled at centre back, Pep Guardiola's side showed they had steel to match their undoubted technique and remain very much in contention for a successful defence of their crown."
+                ],
+                related: [
+                    { id: 'djokovic-win', title: "'Fantastic' Djokovic eases to opening Qatar win", meta: 'Sifos Style · 2 min read', img: 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=150' },
+                    { id: 'cuban-baseball', title: 'Cuban baseball players allowed in MLB without def...', meta: 'Sifos Style · 1 min read', img: 'https://images.unsplash.com/photo-1530541930197-ff16ac917b0e?w=150' },
+                    { id: 'chelsea-abuse', title: 'Chelsea alleged abuse: Police investigate historic...', meta: 'Sifos Style · <1 min read', img: 'https://images.unsplash.com/photo-1516738901171-8eb4fc13bd20?w=150' }
+                ]
+            },
+            'djokovic-win': {
+                title: "'Fantastic' Djokovic eases to opening Qatar win",
+                author: 'Sifos Style (@sifosstyle)',
+                date: 'Published : 3 years ago · 2 min read',
+                img: 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=800',
+                sourceName: 'Straits Times',
+                sourceUrl: 'https://www.straitstimes.com',
+                tags: ['Tennis', 'Djokovic', 'Qatar Open', 'Sports'],
+                paragraphs: [
+                    "Novak Djokovic began his Qatar Open campaign with a convincing victory, styling a masterclass display on court.",
+                    "The world number one looked sharp and comfortable throughout the matchup, setting an assertive tone for his upcoming tournament schedule."
+                ],
+                related: [{ id: 'mancity-liverpool', title: "Football: Man City end Liverpool's unbeaten run...", meta: 'Sifos Style · 2 min read', img: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=150' }]
+            }
+        };
+
+        // Render feed programmatically
+        function renderFeed() {
+            const feedContainer = document.getElementById('news-feed-list');
+            feedContainer.innerHTML = '';
+            
+            Object.keys(ARTICLE_DATABASE).forEach(key => {
+                const item = ARTICLE_DATABASE[key];
+                // Map category data safely
+                const category = item.tags.includes('Politics') ? 'politics' : 'sports';
+                
+                const cardHTML = `
+                    <article class="news-card" data-category="${category}" onclick="openArticle('${key}')" style="margin-bottom: 15px;">
+                        <div class="card-body">
+                            <h2>${item.title}</h2>
+                            <p>${item.paragraphs[0].substring(0, 140)}...</p>
+                        </div>
+                    </article>
+                `;
+                feedContainer.insertAdjacentHTML('beforeend', cardHTML);
+            });
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openArticle(articleId) {
+            const data = ARTICLE_DATABASE[articleId] || ARTICLE_DATABASE['mancity-liverpool'];
+
+            document.getElementById('dyn-title').innerText = data.title;
+            document.getElementById('dyn-author').innerText = data.author;
+            document.getElementById('dyn-date').innerText = data.date;
+            
+            // Build content paragraphs blocks
+            const contentBox = document.getElementById('dyn-content');
+            contentBox.innerHTML = data.paragraphs.map(p => `<p>${p}</p>`).join('');
+            
+            // Image Node safely injected
+            document.getElementById('dyn-media-box').innerHTML = `<img src="${data.img}" class="article-image" alt="Article Media">`;
+            
+            // Set up Source Link attributes
+            const srcAnchor = document.getElementById('dyn-source');
+            srcAnchor.innerText = data.sourceName;
+            srcAnchor.href = data.sourceUrl;
+
+            // Generate Keyword Tag Buttons
+            document.getElementById('dyn-tags').innerHTML = data.tags.map(t => `<a href="#" class="tag-btn" onclick="event.preventDefault()">${t}</a>`).join('');
+
+            // Build Related Stories Previews Grid block layout
+            if (data.related && data.related.length > 0) {
+                document.getElementById('dyn-related-grid').innerHTML = data.related.map(r => `
+                    <div class="related-item" onclick="openArticle('${r.id || 'mancity-liverpool'}')">
+                        <img class="related-thumb" src="${r.img}" alt="thumbnail">
+                        <div class="related-info">
+                            <h4>${r.title}</h4>
+                            <div class="related-meta">${r.meta}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('dyn-related-grid').innerHTML = '<p style="color:#777; font-size:0.9rem;">No related updates available.</p>';
+            }
+
+            showPage('article-page');
+        }
+
+        function filterCategory(catName, element) {
+            document.querySelectorAll('.category-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+            showPage('feed-page');
+            
+            document.querySelectorAll('.news-card').forEach(card => {
+                if (catName === 'all' || card.getAttribute('data-category') === catName) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Initialize Application Core Routing on Page Load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderFeed();
+        });
+    </script>
+</body>
+</html>
